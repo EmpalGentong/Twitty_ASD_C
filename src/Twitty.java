@@ -1,9 +1,12 @@
+import java.io.*;
+
+
 class Vertex {
 
-    public char label; // label (e.g. 'A')
+    public String label; // label (e.g. 'A')
     public boolean wasVisited;
 
-    public Vertex(char lab) // constructor
+    public Vertex(String lab) // constructor
     {
         label = lab;
         wasVisited = false;
@@ -82,7 +85,7 @@ class AdjacencyMatriksGraph {
 
     private final int MAX_VERTS = 20;
     private Vertex vertexList[];
-    private int adjMat[][];
+    int adjMat[][];
     private int nVerts;
     private StackX theStack;
     private Queue theQueue;
@@ -104,13 +107,37 @@ class AdjacencyMatriksGraph {
         theQueue = new Queue();
     }
 
-    public void addVertex(char lab) {
+    public void getVtxData(){
+        int src = 0;
+        while(src<nVerts){
+            System.out.println(vertexList[src].label);
+            src++;
+        }
+    }
+
+    public void addVertex(String lab) {
         vertexList[nVerts++] = new Vertex(lab);
     }
 
     public void addEdge(int start, int end) {
         adjMat[start][end] = 1;
         adjMat[end][start] = 1;
+    }
+    public void connect(String name1, String name2){
+        int counter1=0, counter2=0; boolean cek1 = false,cek2 = false;
+        for(int src = 0;src<vertexList.length;src++){
+            if(vertexList[src].label.equalsIgnoreCase(name1)){
+                counter1 = src;
+                break;
+            }
+        }
+        for(int src = 0;src<vertexList.length;src++){
+            if(vertexList[src].label.equalsIgnoreCase(name2)){
+                counter2 = src;
+               break;
+            }
+        }
+        addEdge(counter1,counter2);
     }
 
     public int getAdjUnvisitedVertex(int v) {
@@ -169,30 +196,32 @@ class AdjacencyMatriksGraph {
     }
 
     public void displayVertex(int v) {
-        System.out.print(vertexList[v].label);
+        System.out.print(vertexList[v].label + " ");
     }
 
 
 }
 public class Twitty{
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException{
         AdjacencyMatriksGraph theGraph = new AdjacencyMatriksGraph();
-        theGraph.addVertex('0');//0
-        theGraph.addVertex('1');//1
-        theGraph.addVertex('2');//2
-        theGraph.addVertex('3');//3
-        theGraph.addVertex('4');//4
-        theGraph.addVertex('5');//5
-        theGraph.addEdge(0, 1);
-        theGraph.addEdge(0, 2);
-        theGraph.addEdge(0, 3);
-        theGraph.addEdge(1, 5);
-        theGraph.addEdge(2, 4);
-        System.out.print("Visits bfs: ");
-        theGraph.bfs(0); // breadth-first search
-        System.out.println();
-        System.out.print("Visits dfs: ");
-        theGraph.dfs(0); // depth-first search
-        System.out.println();
+        BufferedReader read = new BufferedReader(new InputStreamReader(System.in));
+        int tot_User, tot_cnctn,query1,counter =0;
+        tot_User = Integer.parseInt(read.readLine());
+        tot_cnctn = Integer.parseInt(read.readLine());
+        query1 = tot_cnctn+tot_User;
+        while(counter<query1){
+            String [] temp = read.readLine().split(" ");
+
+            if(counter < tot_User){
+                theGraph.addVertex(temp[0]);
+            }
+            else{
+                System.out.println(temp[0] + " "+ temp[1]);
+                theGraph.connect(temp[0],temp[1]);
+            }
+           counter++;
+        }
+        theGraph.dfs(0);
+
     }
 }
