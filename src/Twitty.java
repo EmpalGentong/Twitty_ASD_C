@@ -1,4 +1,5 @@
 import java.io.*;
+import java.sql.SQLOutput;
 
 
 class Vertex {
@@ -86,6 +87,7 @@ class AdjacencyMatriksGraph {
     private final int MAX_VERTS = 20;
     private Vertex vertexList[];
     int adjMat[][];
+    int followed [][];
     private int nVerts;
     private StackX theStack;
     private Queue theQueue;
@@ -95,11 +97,13 @@ class AdjacencyMatriksGraph {
         vertexList = new Vertex[MAX_VERTS];
         // adjacency matrix
         adjMat = new int[MAX_VERTS][MAX_VERTS];
+        followed = new int [MAX_VERTS][MAX_VERTS];
         nVerts = 0;
         for (int j = 0; j < MAX_VERTS; j++) // set adjacency
         {
             for (int k = 0; k < MAX_VERTS; k++) // matrix to 0
             {
+                followed[j][k]=0;
                 adjMat[j][k] = 0;
             }
         }
@@ -121,9 +125,9 @@ class AdjacencyMatriksGraph {
 
     public void addEdge(int start, int end) {
         adjMat[start][end] = 1;
-        adjMat[end][start] = 1;
+        followed[end][start] = 1;
     }
-    public void connect(String name1, String name2){
+    public void follow(String name1, String name2){
         int counter1=0, counter2=0; boolean cek1 = false,cek2 = false;
         for(int src = 0;src<vertexList.length;src++){
             if(vertexList[src].label.equalsIgnoreCase(name1)){
@@ -140,6 +144,29 @@ class AdjacencyMatriksGraph {
         addEdge(counter1,counter2);
     }
 
+    public String mostFoll(){
+        int temp = 0;
+        int [] sumFoll = new int [followed.length];
+        for(int i = 0;i<followed.length;i++){
+            for(int j=0;j<followed.length;j++){
+                if(followed[i][j] == 1){
+                    sumFoll[i]++;
+                }
+            }
+        }
+        for(int i =0;i<sumFoll.length;i++){
+            if(i==0){
+                temp = i;
+            }
+            else{
+                if(temp < sumFoll[i]){
+                    temp=i;
+                }
+            }
+        }
+        return(vertexList[temp].label);
+    }
+
     public int getAdjUnvisitedVertex(int v) {
         for (int j = 0; j < nVerts; j++) {
             if (adjMat[v][j] == 1 && vertexList[j].wasVisited == false) {
@@ -148,11 +175,27 @@ class AdjacencyMatriksGraph {
         }
         return -1;
     }
+    public void numGroup(){
+        int peop = nVerts;
+        int numG = 0;
+        dfs(0);
+        for(int i=0;i<nVerts;i++){
+            if(vertexList[i].wasVisited == false){
+                numG++;
+                dfs(i);
+            }
+        }
+        System.out.println(numG);
+        for (int j = 0; j < nVerts; j++) // reset flags
+        {
+            vertexList[j].wasVisited = false;
+        }
+    }
 
     public void dfs(int x) // depth-firstsearch
     { // beginatvertex0
         vertexList[x].wasVisited = true; //karna dimulai dari node x maka wasVisited di set true (sudah dikunjungi)
-        displayVertex(x); // cetak vertex awal
+        //displayVertex(x); // cetak vertex awal
         theStack.push(x); // push vertex awal ke stack
         while (!theStack.isEmpty()) // pada awal while, stack berisi vertex awal. Dan looping tidak berhenti hingga stack kosong
         {
@@ -163,14 +206,11 @@ class AdjacencyMatriksGraph {
             } else// jika ternyata masih ada vertex
             {
                 vertexList[v].wasVisited = true;
-                displayVertex(v); // displayit
+                //displayVertex(v);
                 theStack.push(v); // pushit
             }
         } // endwhile
-        for (int j = 0; j < nVerts; j++) // reset flags
-        {
-            vertexList[j].wasVisited = false;
-        }
+
     }
 
     public void bfs(int x) // breadth-firstsearch
@@ -195,33 +235,63 @@ class AdjacencyMatriksGraph {
         }
     }
 
-    public void displayVertex(int v) {
-        System.out.print(vertexList[v].label + " ");
+    public void minRt(String a, String b){
+
     }
 
+    public void displayVertex(int v) {
+        System.out.print(vertexList[v].label + " -> ");
+    }
 
+    public void compare(){
+        for(int i = 0;i< vertexList.length-2;i++){
+            displayVertex(i);
+        }
+        System.out.println("");
+        bfs(0);
+    }
 }
 public class Twitty{
     public static void main(String[] args) throws IOException{
         AdjacencyMatriksGraph theGraph = new AdjacencyMatriksGraph();
         BufferedReader read = new BufferedReader(new InputStreamReader(System.in));
         int tot_User, tot_cnctn,query1,counter =0;
+        String input;
         tot_User = Integer.parseInt(read.readLine());
         tot_cnctn = Integer.parseInt(read.readLine());
         query1 = tot_cnctn+tot_User;
         while(counter<query1){
             String [] temp = read.readLine().split(" ");
-
             if(counter < tot_User){
                 theGraph.addVertex(temp[0]);
             }
             else{
                 System.out.println(temp[0] + " "+ temp[1]);
-                theGraph.connect(temp[0],temp[1]);
+                theGraph.follow(temp[0],temp[1]);
             }
            counter++;
         }
-        theGraph.dfs(0);
+        while((input = read.readLine()) != null){
+            String query[] = input.split(" ");
+            if(query[0].equalsIgnoreCase("mostfollowed")){
+                System.out.println(theGraph.mostFoll());
+            }
+            else if(query[0].equalsIgnoreCase("insert")){
+                theGraph.addVertex(query[1]);
+                System.out.println(query[1] + " inserted");
+            }
+            else if(query[0].equalsIgnoreCase("numgroup")){
+                theGraph.numGroup();
+            }
+            else if(query[0].equalsIgnoreCase("connect")){
+                theGraph.follow(query[1],query[2]);
+                System.out.printf("connect %s %s success\n",query[1],query[2]);
+            }
+            else if(query[0].equalsIgnoreCase("minrt")){
+                theGraph.bfs(0);
+            }
+        }
+
 
     }
 }
