@@ -88,9 +88,10 @@ class AdjacencyMatriksGraph {
     private Vertex vertexList[];
     int adjMat[][];
     int followed [][];
-    private int nVerts;
+    int nVerts =0;
     private StackX theStack;
     private Queue theQueue;
+    int numCon =0;
 
     public AdjacencyMatriksGraph() // constructor
     {
@@ -126,14 +127,16 @@ class AdjacencyMatriksGraph {
     public void addEdge(int start, int end) {
         adjMat[start][end] = 1;
         followed[end][start] = 1;
+        numCon++;
     }
     public void follow(String name1, String name2){
-        int counter1=0, counter2=0; boolean cek1 = false,cek2 = false;
+        int counter1=0, counter2=0;
         for(int src = 0;src<vertexList.length;src++){
             if(vertexList[src].label.equalsIgnoreCase(name1)){
                 counter1 = src;
                 break;
             }
+
         }
         for(int src = 0;src<vertexList.length;src++){
             if(vertexList[src].label.equalsIgnoreCase(name2)){
@@ -213,10 +216,74 @@ class AdjacencyMatriksGraph {
 
     }
 
+
+    public int dfs2(int x,int y, String b) // depth-firstsearch
+    { // beginatvertex0
+        int minrt = -1;
+        int index = 0;
+        vertexList[x].wasVisited = true; //karna dimulai dari node x maka wasVisited di set true (sudah dikunjungi)
+        displayVertex(x); // cetak vertex awal
+        theStack.push(x); // push vertex awal ke stack
+        while (!theStack.isEmpty()) // pada awal while, stack berisi vertex awal. Dan looping tidak berhenti hingga stack kosong
+        {
+            int v = getAdjUnvisitedVertex(theStack.peek()); // memanggil methodnya, dimana pasti mengembalikan nilai integer atau -1
+            if (v == -1) // cek jika tidak ada vertex lagi maka stack di pop
+            {
+                theStack.pop();
+            } else// jika ternyata masih ada vertex
+            {
+                vertexList[v].wasVisited = true;
+                if(vertexList[v].label.equalsIgnoreCase(b)){
+                    //dikurangi destinasi;
+                    System.out.println("break");
+                    break;
+                }
+                if(adjMat[v][y]==1){
+                    index = v;
+                }
+                if(minrt >nVerts ){
+                    System.out.println(" heyyo -> ");
+                    minrt = -1;
+                    break;
+                }
+                minrt++;
+                displayVertex(v);
+                theStack.push(v); // pushit
+            }
+
+        }
+        if(adjMat[index][y]==1){
+            minrt -= 1;
+        }
+        return minrt;
+    }
+
+    public int minrt(String a,String b) {
+        int counter1=0, counter2=0;
+        for(int src = 0; src<vertexList.length;src++){
+            if(vertexList[src].label.equalsIgnoreCase(a)) {
+                counter1 = src;
+                break;
+            }
+        }
+        for(int src = 0; src<vertexList.length;src++){
+            if(vertexList[src].label.equalsIgnoreCase(b)){
+                counter2 = src;
+                break;
+            }
+        }
+        int x = dfs2(counter1,counter2, b);
+        for (int j = 0; j < nVerts; j++) // reset flags
+        {
+            vertexList[j].wasVisited = false;
+        }
+        return x;
+    }
+
     public void bfs(int x) // breadth-firstsearch
     { // beginatvertex0
         vertexList[x].wasVisited = true; // mark it
-        displayVertex(x); // displayit
+        //displayVertex(x); // displayit
         theQueue.insert(x); // insertattail
         int v2;
         while (!theQueue.isEmpty()) {
@@ -224,19 +291,14 @@ class AdjacencyMatriksGraph {
             // until it has no unvisited neighbors
             while ((v2 = getAdjUnvisitedVertex(v1)) != -1) { // get one,
                 vertexList[v2].wasVisited = true; // mark it
-                displayVertex(v2); // displayit
+                //displayVertex(v2); // displayit
                 theQueue.insert(v2); // insertit
             } // endwhile
         } // endwhile(queuenot empty)
-        // queueis empty, sowe'redone
         for (int j = 0; j < nVerts; j++) // reset flags
         {
             vertexList[j].wasVisited = false;
         }
-    }
-
-    public void minRt(String a, String b){
-
     }
 
     public void displayVertex(int v) {
@@ -250,7 +312,8 @@ class AdjacencyMatriksGraph {
         System.out.println("");
         bfs(0);
     }
-}
+    }
+
 public class Twitty{
     public static void main(String[] args) throws IOException{
         AdjacencyMatriksGraph theGraph = new AdjacencyMatriksGraph();
@@ -288,10 +351,9 @@ public class Twitty{
                 System.out.printf("connect %s %s success\n",query[1],query[2]);
             }
             else if(query[0].equalsIgnoreCase("minrt")){
-                theGraph.bfs(0);
+                System.out.println("minrt : " +theGraph.minrt(query[1],query[2]));
+                System.out.println(theGraph.minrt("graphy","hadiyan"));
             }
         }
-
-
     }
 }
